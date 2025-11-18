@@ -38,7 +38,7 @@ ${nextSteps.map(step => `- ${step}`).join('\n')}
 1. This guide has been injected into your context for creating steering documents
 2. Only proceed if the user explicitly requested steering document creation
 3. Follow the sequence exactly: product.md → tech.md → structure.md
-4. Read templates from .spec-workflow/templates/ directory
+4. **CRITICAL: Check .spec-workflow/user-templates/ FIRST, fallback to .spec-workflow/templates/**
 5. Create documents in .spec-workflow/steering/ directory
 6. Request approval after each document using the approvals tool
 7. Never proceed to the next document without successful approval cleanup

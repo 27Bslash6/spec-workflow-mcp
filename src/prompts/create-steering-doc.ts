@@ -46,15 +46,22 @@ ${scope ? `- Scope: ${scope}` : ''}
 ${context.dashboardUrl ? `- Dashboard: ${context.dashboardUrl}` : ''}
 
 **Instructions:**
-1. First, read the template at: .spec-workflow/templates/${docType}-template.md
-2. Check if steering docs exist at: .spec-workflow/steering/
-3. Create comprehensive content following the template structure
-4. Create the document at: .spec-workflow/steering/${docType}.md
-5. After creating, use approvals tool with action:'request' to get user approval
+1. **CRITICAL: Check for custom template FIRST at: .spec-workflow/user-templates/${docType}-template.md**
+2. If custom template exists, read it and use it for document creation
+3. If NO custom template exists, read default template at: .spec-workflow/templates/${docType}-template.md
+4. Check if steering docs exist at: .spec-workflow/steering/
+5. Create comprehensive content following the template structure
+6. Create the document at: .spec-workflow/steering/${docType}.md
+7. After creating, use approvals tool with action:'request' to get user approval
 
 **File Paths:**
-- Template location: .spec-workflow/templates/${docType}-template.md
+- **Custom template location (CHECK FIRST):** .spec-workflow/user-templates/${docType}-template.md
+- Default template location (fallback): .spec-workflow/templates/${docType}-template.md
 - Document destination: .spec-workflow/steering/${docType}.md
+
+**Template Priority:**
+Custom user templates in user-templates/ directory ALWAYS take precedence over default templates.
+This allows projects to customize their steering documents without modifying core templates.
 
 **Steering Document Types:**
 - **product**: Defines project vision, goals, and user outcomes

@@ -10,202 +10,48 @@ export const logImplementationTool: Tool = {
 
 ⚠️ CRITICAL: Artifacts are REQUIRED. This creates a searchable knowledge base that future AI agents use to discover existing code and avoid duplication.
 
-# WHY DETAILED LOGGING MATTERS
+Future agents grep implementation logs before implementing new tasks. Complete logs prevent duplicating APIs, components, functions, and integrations.
 
-Future AI agents (and future you) will use grep/ripgrep to search implementation logs before implementing new tasks. Complete logs prevent:
-- ❌ Creating duplicate API endpoints
-- ❌ Reimplementing existing components
-- ❌ Duplicating utility functions and business logic
-- ❌ Breaking established integration patterns
+# REQUIRED: artifacts object
 
-Incomplete logs = Duplicated code = Technical debt
+Document ALL implemented artifacts with full details:
 
-# REQUIRED FIELDS
+## apiEndpoints (array)
+For new/modified API endpoints:
+- method, path, purpose, requestFormat, responseFormat, location (file:line)
 
-## artifacts (REQUIRED - Object)
+Example: \`{ "method": "GET", "path": "/api/users", "purpose": "List users", "location": "server.ts:45" }\`
 
-Contains structured data about what was implemented. Must include relevant artifact types:
+## components (array)
+For reusable UI components:
+- name, type (React/Vue/etc), purpose, location, props, exports
 
-### apiEndpoints (array of API endpoint objects)
-When new API endpoints are created/modified, document:
-- method: HTTP method (GET, POST, PUT, DELETE, PATCH)
-- path: Route path (e.g., "/api/specs/:name/logs")
-- purpose: What this endpoint does
-- requestFormat: Request body/query params format (JSON schema or example)
-- responseFormat: Response structure (JSON schema or example)
-- location: File path and line number (e.g., "src/server.ts:245")
+Example: \`{ "name": "UserList", "type": "React", "purpose": "Display users", "location": "components/UserList.tsx" }\`
 
-Example:
-\`\`\`
-{
-  "method": "GET",
-  "path": "/api/specs/:name/implementation-log",
-  "purpose": "Retrieve implementation logs with optional filtering",
-  "requestFormat": "Query params: taskId (string, optional), search (string, optional)",
-  "responseFormat": "{ entries: ImplementationLogEntry[] }",
-  "location": "src/dashboard/server.ts:245"
-}
-\`\`\`
+## functions (array)
+For utility functions:
+- name, purpose, location, signature, isExported
 
-### components (array of component objects)
-When reusable UI components are created, document:
-- name: Component name
-- type: Framework type (React, Vue, Svelte, etc.)
-- purpose: What the component does
-- location: File path
-- props: Props interface or type signature
-- exports: What it exports (array of export names)
+Example: \`{ "name": "hashPassword", "purpose": "Hash user passwords", "location": "utils/auth.ts:12", "signature": "(password: string) => string", "isExported": true }\`
 
-Example:
-\`\`\`
-{
-  "name": "LogsPage",
-  "type": "React",
-  "purpose": "Main dashboard page for viewing implementation logs with search and filtering",
-  "location": "src/modules/pages/LogsPage.tsx",
-  "props": "{ specs: any[], selectedSpec: string, onSelect: (value: string) => void }",
-  "exports": ["LogsPage (default)"]
-}
-\`\`\`
+## classes (array)
+For classes:
+- name, purpose, location, methods[], isExported
 
-### functions (array of function objects)
-When utility functions are created, document:
-- name: Function name
-- purpose: What it does
-- location: File path and line
-- signature: Function signature (params and return type)
-- isExported: Whether it can be imported
+Example: \`{ "name": "UserService", "purpose": "User CRUD operations", "location": "services/user.ts", "methods": ["create", "update", "delete"] }\`
 
-Example:
-\`\`\`
-{
-  "name": "searchLogs",
-  "purpose": "Search implementation logs by keyword",
-  "location": "src/dashboard/implementation-log-manager.ts:156",
-  "signature": "(searchTerm: string) => Promise<ImplementationLogEntry[]>",
-  "isExported": true
-}
-\`\`\`
+## integrations (array)
+For frontend-backend connections:
+- description, frontendComponent, backendEndpoint, dataFlow
 
-### classes (array of class objects)
-When classes are created, document:
-- name: Class name
-- purpose: What the class does
-- location: File path
-- methods: List of public methods
-- isExported: Whether it can be imported
+Example: \`{ "description": "User list page fetches from API", "frontendComponent": "UserList", "backendEndpoint": "GET /api/users", "dataFlow": "Mount → API fetch → Display" }\`
 
-Example:
-\`\`\`
-{
-  "name": "ImplementationLogManager",
-  "purpose": "Manages CRUD operations for implementation logs",
-  "location": "src/dashboard/implementation-log-manager.ts",
-  "methods": ["loadLog", "addLogEntry", "getAllLogs", "searchLogs", "getTaskStats"],
-  "isExported": true
-}
-\`\`\`
+# Good vs Bad
 
-### integrations (array of integration objects)
-Document how frontend connects to backend:
-- description: How components connect to APIs
-- frontendComponent: Which component initiates the connection
-- backendEndpoint: Which API endpoint is called
-- dataFlow: Describe the data flow (e.g., "User clicks → API call → State update → Re-render")
+✅ GOOD: \`{ "artifacts": { "apiEndpoints": [...], "components": [...] }, "filesModified": [...] }\`
+❌ BAD: \`{ "artifacts": {}, "summary": "did stuff" }\`
 
-Example:
-\`\`\`
-{
-  "description": "LogsPage fetches logs via REST API and subscribes to WebSocket for real-time updates",
-  "frontendComponent": "LogsPage",
-  "backendEndpoint": "GET /api/specs/:name/implementation-log",
-  "dataFlow": "Component mount → API fetch → Display logs → WebSocket subscription → Real-time updates on new entries"
-}
-\`\`\`
-
-# GOOD EXAMPLE (Include ALL relevant artifacts)
-
-Task: "Implemented logs dashboard with real-time updates"
-
-\`\`\`json
-{
-  "taskId": "2.3",
-  "summary": "Implemented real-time implementation logs dashboard with filtering, search, and WebSocket updates",
-  "artifacts": {
-    "apiEndpoints": [
-      {
-        "method": "GET",
-        "path": "/api/specs/:name/implementation-log",
-        "purpose": "Retrieve implementation logs with optional filtering",
-        "requestFormat": "Query params: taskId (string, optional), search (string, optional)",
-        "responseFormat": "{ entries: ImplementationLogEntry[] }",
-        "location": "src/dashboard/server.ts:245"
-      }
-    ],
-    "components": [
-      {
-        "name": "LogsPage",
-        "type": "React",
-        "purpose": "Main dashboard page for viewing implementation logs with search and filtering",
-        "location": "src/modules/pages/LogsPage.tsx",
-        "props": "None (uses React Router params)",
-        "exports": ["LogsPage (default)"]
-      }
-    ],
-    "classes": [
-      {
-        "name": "ImplementationLogManager",
-        "purpose": "Manages CRUD operations for implementation logs",
-        "location": "src/dashboard/implementation-log-manager.ts",
-        "methods": ["loadLog", "addLogEntry", "getAllLogs", "searchLogs", "getTaskStats"],
-        "isExported": true
-      }
-    ],
-    "integrations": [
-      {
-        "description": "LogsPage fetches logs via REST API and subscribes to WebSocket for real-time updates",
-        "frontendComponent": "LogsPage",
-        "backendEndpoint": "GET /api/specs/:name/implementation-log",
-        "dataFlow": "Component mount → API fetch → Display logs → WebSocket subscription → Real-time updates on new entries"
-      }
-    ]
-  },
-  "filesModified": ["src/dashboard/server.ts"],
-  "filesCreated": ["src/modules/pages/LogsPage.tsx"],
-  "statistics": { "linesAdded": 650, "linesRemoved": 15, "filesChanged": 2 }
-}
-\`\`\`
-
-# BAD EXAMPLE (Don't do this)
-
-❌ Empty artifacts - Future agents learn nothing:
-\`\`\`json
-{
-  "taskId": "2.3",
-  "summary": "Added endpoint and page",
-  "artifacts": {},
-  "filesModified": ["server.ts"],
-  "filesCreated": ["LogsPage.tsx"]
-}
-\`\`\`
-
-❌ Vague summary with no structured data:
-\`\`\`json
-{
-  "taskId": "2.3",
-  "summary": "Implemented features",
-  "artifacts": {},
-  "filesModified": ["server.ts", "app.tsx"]
-}
-\`\`\`
-
-# Instructions
-
-1. After completing a task, review what you implemented
-2. Identify all artifacts (APIs, components, functions, classes, integrations)
-3. Document each with full details and locations
-4. Include ALL the information - be thorough!
-5. Future agents depend on this data quality`,
+Be thorough - future agents depend on this data quality.`,
   inputSchema: {
     type: 'object',
     properties: {

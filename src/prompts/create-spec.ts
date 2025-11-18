@@ -53,17 +53,24 @@ ${description ? `- Description: ${description}` : ''}
 ${context.dashboardUrl ? `- Dashboard: ${context.dashboardUrl}` : ''}
 
 **Instructions:**
-1. First, read the template at: .spec-workflow/templates/${documentType}-template.md
-2. Follow the template structure exactly - this ensures consistency across the project
-3. Create comprehensive content that follows spec-driven development best practices
-4. Include all required sections from the template
-5. Use clear, actionable language
-6. Create the document at: .spec-workflow/specs/${specName}/${documentType}.md
-7. After creating, use approvals tool with action:'request' to get user approval
+1. **CRITICAL: Check for custom template FIRST at: .spec-workflow/user-templates/${documentType}-template.md**
+2. If custom template exists, read it and use it for document creation
+3. If NO custom template exists, read default template at: .spec-workflow/templates/${documentType}-template.md
+4. Follow the template structure exactly - this ensures consistency across the project
+5. Create comprehensive content that follows spec-driven development best practices
+6. Include all required sections from the template
+7. Use clear, actionable language
+8. Create the document at: .spec-workflow/specs/${specName}/${documentType}.md
+9. After creating, use approvals tool with action:'request' to get user approval
 
 **File Paths:**
-- Template location: .spec-workflow/templates/${documentType}-template.md
+- **Custom template location (CHECK FIRST):** .spec-workflow/user-templates/${documentType}-template.md
+- Default template location (fallback): .spec-workflow/templates/${documentType}-template.md
 - Document destination: .spec-workflow/specs/${specName}/${documentType}.md
+
+**Template Priority:**
+Custom user templates in user-templates/ directory ALWAYS take precedence over default templates.
+This allows projects to customize their spec workflow without modifying core templates.
 
 **Workflow Guidelines:**
 - Requirements documents define WHAT needs to be built

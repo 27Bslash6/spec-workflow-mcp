@@ -8,15 +8,7 @@ import { validateTasksMarkdown, formatValidationErrors } from '../core/task-vali
 
 export const approvalsTool: Tool = {
   name: 'approvals',
-  description: `Manage approval requests through the dashboard interface.
-
-# Instructions
-Use this tool to request, check status, or delete approval requests. The action parameter determines the operation:
-- 'request': Create a new approval request after creating each document
-- 'status': Check the current status of an approval request
-- 'delete': Clean up completed approval requests
-
-CRITICAL: Only provide filePath parameter for requests - the dashboard reads files directly. Never include document content. Wait for user to review and approve before continuing.`,
+  description: `BLOCKING tool - requires Dashboard/VSCode approval. Actions: request, status, delete. See spec-workflow://approval-workflow resource. CRITICAL: Provide filePath only, never content.`,
   inputSchema: {
     type: 'object',
     properties: {

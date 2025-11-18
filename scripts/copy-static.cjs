@@ -31,6 +31,15 @@ if (fs.existsSync(markdownSrc)) {
   console.log('✓ Copied markdown files');
 }
 
+// Copy resources directory (MCP resources for workflow guides)
+const resourcesSrc = path.join(__dirname, '..', 'src', 'resources');
+const resourcesDest = path.join(__dirname, '..', 'dist', 'resources');
+
+if (fs.existsSync(resourcesSrc)) {
+  copyDir(resourcesSrc, resourcesDest);
+  console.log('✓ Copied resource files');
+}
+
 // Copy locales directory
 const localesSrc = path.join(__dirname, '..', 'src', 'locales');
 const localesDest = path.join(__dirname, '..', 'dist', 'locales');

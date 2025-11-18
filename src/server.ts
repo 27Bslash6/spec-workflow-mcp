@@ -10,6 +10,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { registerTools, handleToolCall } from './tools/index.js';
 import { registerPrompts, handlePromptList, handlePromptGet } from './prompts/index.js';
+import { registerResourceHandlers } from './resources/index.js';
 import { validateProjectPath } from './core/path-utils.js';
 import { WorkspaceInitializer } from './core/workspace-initializer.js';
 import { ProjectRegistry } from './core/project-registry.js';
@@ -48,7 +49,8 @@ export class SpecWorkflowMCPServer {
         tools: toolsCapability,
         prompts: {
           listChanged: true
-        }
+        },
+        resources: {}
       }
     });
 
@@ -128,6 +130,9 @@ export class SpecWorkflowMCPServer {
   }
 
   private setupHandlers(context: any) {
+    // Resource handlers
+    registerResourceHandlers(this.server);
+
     // Tool handlers
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: registerTools()
