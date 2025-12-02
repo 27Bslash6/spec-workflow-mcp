@@ -2,13 +2,21 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolContext, ToolResponse } from '../types.js';
 import { ApprovalStorage } from '../dashboard/approval-storage.js';
 import { join } from 'path';
-import { validateProjectPath } from '../core/path-utils.js';
+import { validateProjectPath, PathUtils } from '../core/path-utils.js';
 import { readFile } from 'fs/promises';
 import { validateTasksMarkdown, formatValidationErrors } from '../core/task-validator.js';
 
 export const approvalsTool: Tool = {
   name: 'approvals',
-  description: `BLOCKING tool - requires Dashboard/VSCode approval. Actions: request, status, delete. See spec-workflow://approval-workflow resource. CRITICAL: Provide filePath only, never content.`,
+  description: `Manage approval requests through the dashboard interface.
+
+# Instructions
+Use this tool to request, check status, or delete approval requests. The action parameter determines the operation:
+- 'request': Create a new approval request after creating each document
+- 'status': Check the current status of an approval request
+- 'delete': Clean up completed, rejected, or needs-revision approval requests (cannot delete pending requests)
+
+CRITICAL: Only provide filePath parameter for requests - the dashboard reads files directly. Never include document content. Wait for user to review and approve before continuing.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -105,7 +113,7 @@ export async function approvalsHandler(
 ): Promise<ToolResponse> {
   // Cast to discriminated union type
   const typedArgs = args as ApprovalArgs;
-  
+
   switch (typedArgs.action) {
     case 'request':
       if (isRequestApproval(typedArgs)) {
@@ -149,7 +157,7 @@ export async function approvalsHandler(
         message: `Unknown action: ${(args as any).action}. Use 'request', 'status', or 'delete'.`
       };
   }
-  
+
   // This should never be reached due to exhaustive type checking
   return {
     success: false,
@@ -163,7 +171,7 @@ async function handleRequestApproval(
 ): Promise<ToolResponse> {
   // Use context projectPath as default, allow override via args
   const projectPath = args.projectPath || context.projectPath;
-  
+
   if (!projectPath) {
     return {
       success: false,
@@ -174,8 +182,10 @@ async function handleRequestApproval(
   try {
     // Validate and resolve project path
     const validatedProjectPath = await validateProjectPath(projectPath);
+    // Translate path at tool entry point (ApprovalStorage expects pre-translated paths)
+    const translatedPath = PathUtils.translatePath(validatedProjectPath);
 
-    const approvalStorage = new ApprovalStorage(validatedProjectPath);
+    const approvalStorage = new ApprovalStorage(translatedPath, validatedProjectPath);
     await approvalStorage.start();
 
     // Validate tasks.md format before allowing approval request
@@ -286,8 +296,10 @@ async function handleGetApprovalStatus(
 
     // Validate and resolve project path
     const validatedProjectPath = await validateProjectPath(projectPath);
+    // Translate path at tool entry point (ApprovalStorage expects pre-translated paths)
+    const translatedPath = PathUtils.translatePath(validatedProjectPath);
 
-    const approvalStorage = new ApprovalStorage(validatedProjectPath);
+    const approvalStorage = new ApprovalStorage(translatedPath, validatedProjectPath);
     await approvalStorage.start();
 
     const approval = await approvalStorage.getApproval(args.approvalId);
@@ -407,8 +419,10 @@ async function handleDeleteApproval(
 
     // Validate and resolve project path
     const validatedProjectPath = await validateProjectPath(projectPath);
+    // Translate path at tool entry point (ApprovalStorage expects pre-translated paths)
+    const translatedPath = PathUtils.translatePath(validatedProjectPath);
 
-    const approvalStorage = new ApprovalStorage(validatedProjectPath);
+    const approvalStorage = new ApprovalStorage(translatedPath, validatedProjectPath);
     await approvalStorage.start();
 
     // Check if approval exists and its status
@@ -424,11 +438,12 @@ async function handleDeleteApproval(
       };
     }
 
-    // Only allow deletion of approved requests
-    if (approval.status !== 'approved') {
+    // Only block deletion of pending requests (still awaiting approval)
+    // Allow deletion of: approved, needs-revision, rejected
+    if (approval.status === 'pending') {
       return {
         success: false,
-        message: `BLOCKED: Cannot proceed - status is "${approval.status}". VERBAL APPROVAL NOT ACCEPTED. Use dashboard or VS Code extension.`,
+        message: `BLOCKED: Cannot delete - status is "${approval.status}". This approval is still awaiting review. VERBAL APPROVAL NOT ACCEPTED. Use dashboard or VS Code extension.`,
         data: {
           approvalId: args.approvalId,
           currentStatus: approval.status,
@@ -437,9 +452,10 @@ async function handleDeleteApproval(
           canProceed: false
         },
         nextSteps: [
-          'STOP - Do not proceed to next phase',
-          'Wait for approval',
-          'Poll with approvals action:"status"'
+          'STOP - Cannot delete pending approval',
+          'Wait for approval or rejection',
+          'Poll with approvals action:"status"',
+          'Delete only after status changes to approved, rejected, or needs-revision'
         ]
       };
     }
